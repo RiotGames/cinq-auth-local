@@ -36,7 +36,7 @@ setuptools.setup(
     url='https://github.com/RiotGames/cinq-auth-local/',
     author='Riot Games Security',
     author_email='security@riotgames.com',
-    license='MIT',
+    license='Apache 2.0',
     classifiers=[
         # Current project status
         'Development Status :: 4 - Beta',
@@ -46,7 +46,7 @@ setuptools.setup(
         'Intended Audience :: Information Technology',
 
         # License information
-        'License :: OSI Approved :: MIT',
+        'License :: OSI Approved :: Apache 2.0',
 
         # Supported python versions
         'Programming Language :: Python :: 3.5',
