@@ -33,8 +33,8 @@ setuptools.setup(
     # Metadata for the project
     description='Local DB based user authentication',
     long_description=long_desc,
-    url='https://github.com/CloudInquisitor/cinq-auth-local/',
-    author='Riot Games InfoSec',
+    url='https://github.com/RiotGames/cinq-auth-local/',
+    author='Riot Games Security',
     author_email='security@riotgames.com',
     license='MIT',
     classifiers=[
