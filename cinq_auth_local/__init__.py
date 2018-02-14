@@ -1,11 +1,12 @@
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
-from cloud_inquisitor import BaseView, db
 from cloud_inquisitor.constants import MSG_INVALID_USER_OR_PASSWORD, ROLE_ADMIN, ROLE_USER
-from cloud_inquisitor.plugins import BaseAuthPlugin
+from cloud_inquisitor.plugins import BaseAuthPlugin, BaseView
 from cloud_inquisitor.schema import Role, User
 from cloud_inquisitor.utils import generate_csrf_token, generate_jwt_token, generate_password, hash_password
 from flask import session, request
+
+from cloud_inquisitor.database import db
 
 ph = PasswordHasher()
 
@@ -45,7 +46,7 @@ class LocalAuthLogin(BaseLocalAuthView):
             session['csrf_token'] = generate_csrf_token()
             session['accounts'] = [x.account_id for x in db.Account.all() if x.user_has_access(user)]
 
-            token = generate_jwt_token(user, self.__class__.name)
+            token = generate_jwt_token(user, self.name)
 
             return self.make_response({
                 'authToken': token,
