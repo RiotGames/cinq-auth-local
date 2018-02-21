@@ -1,11 +1,12 @@
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
-from cloud_inquisitor import BaseView, db
-from cloud_inquisitor.constants import MSG_INVALID_USER_OR_PASSWORD, ROLE_ADMIN, ROLE_USER, NS_AUTH
-from cloud_inquisitor.plugins import BaseAuthPlugin
-from cloud_inquisitor.schema import Account, Role, User
+from cloud_inquisitor.constants import MSG_INVALID_USER_OR_PASSWORD, ROLE_ADMIN, ROLE_USER
+from cloud_inquisitor.plugins import BaseAuthPlugin, BaseView
+from cloud_inquisitor.schema import Role, User
 from cloud_inquisitor.utils import generate_csrf_token, generate_jwt_token, generate_password, hash_password
 from flask import session, request
+
+from cloud_inquisitor.database import db
 
 ph = PasswordHasher()
 
@@ -24,7 +25,7 @@ class LocalAuthLogin(BaseLocalAuthView):
         args = self.reqparse.parse_args()
 
         try:
-            user = User.query.filter(
+            user = db.User.filter(
                 User.username == args['username'],
                 User.auth_system == self.name
             ).first()
@@ -43,9 +44,9 @@ class LocalAuthLogin(BaseLocalAuthView):
             # Setup the user session with all the information required
             session['user'] = user
             session['csrf_token'] = generate_csrf_token()
-            session['accounts'] = [x.account_id for x in Account.query.all() if x.user_has_access(user)]
+            session['accounts'] = [x.account_id for x in db.Account.all() if x.user_has_access(user)]
 
-            token = generate_jwt_token(user, self.__class__.name)
+            token = generate_jwt_token(user, self.name)
 
             return self.make_response({
                 'authToken': token,
@@ -67,7 +68,6 @@ class LocalAuthLogin(BaseLocalAuthView):
                 request.remote_addr,
                 ex
             ))
-            db.session.rollback()
 
         finally:
             db.session.rollback()
@@ -89,10 +89,13 @@ class LocalAuth(BaseAuthPlugin):
     logout = '/auth/local/logout'
 
     def bootstrap(self):
-        admin_user = User.query.filter(User.username == 'admin', User.auth_system == self.name).first()
+        admin_user = db.User.find_one(
+            User.username == 'admin',
+            User.auth_system == self.name
+        )
 
         if not admin_user:
-            roles = Role.query.filter(Role.name.in_((ROLE_ADMIN, ROLE_USER))).all()
+            roles = db.Role.filter(Role.name.in_((ROLE_ADMIN, ROLE_USER))).all()
             admin_password = generate_password()
             admin_user = User()
 
